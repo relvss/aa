@@ -1,0 +1,172 @@
+import turtle
+import time
+import math
+
+# Configuración del sistema
+def inicializar_escena():
+    pantalla = turtle.Screen()
+    pantalla.setup(width=800, height=800)
+    pantalla.bgcolor("#87CEEB")  # Cielo claro
+    pantalla.title("Un regalo para ti")
+    pantalla.tracer(0)
+    return pantalla
+
+def dibujar_ambiente():
+    t = turtle.Turtle()
+    t.hideturtle()
+    t.speed(0)
+    
+    # 1. Suelo (Tierra)
+    t.penup()
+    t.goto(-400, -200)
+    t.color("#00FF00")
+    t.begin_fill()
+    for _ in range(2):
+        t.forward(800)
+        t.right(90)
+        t.forward(200)
+        t.right(90)
+    t.end_fill()
+    
+    # 2. El Sol
+    t.penup()
+    t.goto(-300, 250)
+    t.color("yellow")
+    t.begin_fill()
+    t.circle(40)
+    t.end_fill()
+
+def dibujar_forma_petalo(t, radio, angulo):
+    """Dibuja la silueta de un pétalo"""
+    t.begin_fill()
+    t.circle(radio, angulo)
+    t.left(180 - angulo)
+    t.circle(radio, angulo)
+    t.left(180 - angulo)
+    t.end_fill()
+
+def animar_crecimiento():
+    pantalla = inicializar_escena()
+    dibujar_ambiente()
+    
+    t = turtle.Turtle()
+    t.hideturtle()
+    t.speed(0)
+    
+    # --- ETAPA 1: EL TALLO ---
+    t.penup()
+    t.goto(0, -210)
+    t.setheading(90)
+    t.pendown()
+    t.color("#2D5A27")
+    
+    puntos_tallo = []
+    for i in range(50):
+        t.pensize(max(2, 8 - i/7))
+        t.forward(5)
+        t.left(math.sin(i/5) * 1.5) # Movimiento orgánico
+        if i % 15 == 0:
+            puntos_tallo.append((t.position(), t.heading()))
+        if i % 2 == 0:
+            pantalla.update()
+            time.sleep(0.02)
+            
+    # --- ETAPA 2: LAS HOJAS ---
+    for pos, ang in puntos_tallo[1:]:
+        t.penup()
+        t.goto(pos)
+        t.color("#4F7942", "#74C365")
+        # Hoja Izquierda
+        t.setheading(ang + 60)
+        dibujar_forma_petalo(t, 45, 65)
+        # Hoja Derecha
+        t.setheading(ang - 60)
+        dibujar_forma_petalo(t, 45, 65)
+        pantalla.update()
+        time.sleep(0.2)
+
+    # --- ETAPA 3: LA FLOR ABRIÉNDOSE ---
+    centro_flor = t.position()
+    num_petalos = 100
+    phi = 137.5
+    
+    for i in range(num_petalos):
+        t.penup()
+        t.goto(centro_flor)
+        # Distribución de Fibonacci
+        angulo = i * phi
+        radio_distancia = 1.2 * math.sqrt(i * 15)
+        
+        t.setheading(angulo)
+        t.forward(radio_distancia)
+        t.pendown()
+        
+        # Colores de la flor (Rojo a Rosa)
+        r = min(1.0, 0.6 + (i/num_petalos)*0.4)
+        b = min(1.0, 0.3 + (i/num_petalos)*0.5)
+        t.color((r, 0, b*0.5), (r, 0.2, b))
+        
+        tam_petalo = 8 + (i/5)
+        dibujar_forma_petalo(t, tam_petalo * 2, 70)
+        
+        if i % 3 == 0:
+            pantalla.update()
+            time.sleep(0.01)
+
+    # Centro de la flor
+    t.penup()
+    t.goto(centro_flor)
+    t.color("gold")
+    for _ in range(10):
+        t.dot(25 - _)
+    
+    pantalla.update()
+    time.sleep(0.5)
+
+    # --- ETAPA 4: EL MENSAJE MÁGICO ---
+    escritor = turtle.Turtle()
+    escritor.hideturtle()
+    escritor.penup()
+    # Posición encima de la flor
+    escritor.goto(0, centro_flor[1] + 120)
+    escritor.color("white")
+    
+    # Sombra para legibilidad
+    escritor.goto(2, centro_flor[1] + 118)
+    escritor.color("#440000")
+    escritor.write("Te Amo", align="center", font=("Arial", 40, "bold"))
+    
+    # Texto principal
+    escritor.goto(0, centro_flor[1] + 120)
+    escritor.color("#FF1493") # Rosa vibrante
+    
+    # Animación de escritura (letra por letra)
+    mensaje = "una flor para otra flor"
+    texto_actual = ""
+    for letra in mensaje:
+        texto_actual += letra
+        escritor.clear()
+        # Redibujar sombra
+        escritor.color("#440000")
+        escritor.goto(2, centro_flor[1] + 118)
+        escritor.write(texto_actual, align="center", font=("Arial", 42, "bold"))
+        # Redibujar texto
+        escritor.color("white")
+        escritor.goto(0, centro_flor[1] + 120)
+        escritor.write(texto_actual, align="center", font=("Arial", 42, "bold"))
+        pantalla.update()
+        time.sleep(0.1)
+
+    # Corazones flotantes
+    for i in range(5):
+        escritor.penup()
+        escritor.goto(-150 + i*75, centro_flor[1] + 180 + (i%2)*20)
+        escritor.color("red")
+        escritor.write("❤", align="center", font=("Arial", 20, "normal"))
+        pantalla.update()
+        time.sleep(0.2)
+
+    pantalla.exitonclick()
+
+if __name__ == "__main__":
+    animar_crecimiento()
